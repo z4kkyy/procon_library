@@ -9,43 +9,55 @@ private:
 
 public:
     std::unordered_map<int, std::vector<int>> groups;
-    std::unordered_map<int,std::vector<std::pair<int, int>>> group_edges;
+    std::unordered_map<int, std::vector<std::pair<int, int>>> group_edges;
     std::vector<std::pair<int, int>> edges;
     bool has_cycle;
 
-    UnionFind(int n_) : par(n_,-1), has_cycle(false) {}
+    UnionFind(const int n_) : par(n_, -1), has_cycle(false) {}
 
-    bool merge(int x, int y) {
+    bool merge(const int x, const int y) {
         edges.emplace_back(x, y);
-        x = root(x), y = root(y);
-        if (x == y) {
+        int root_x = root(x);
+        int root_y = root(y);
+        if (root_x == root_y) {
             has_cycle = true;
             return false;
         }
-        if (par[x] > par[y]) std::swap(x, y);
-        par[x] += par[y];
-        par[y] = x;
+        if (par[root_x] > par[root_y]) std::swap(root_x, root_y);
+        par[root_x] += par[root_y];
+        par[root_y] = root_x;
         return true;
     }
 
-    bool merge(std::pair<int, int> p) { return merge(p.first, p.second); }
+    bool merge(const std::pair<int, int>& p) {
+        return merge(p.first, p.second);
+    }
 
-    int root(int x) { return (par[x] < 0) ? x : (par[x] = root(par[x])); }
+    int root(int x) {
+        if (par[x] < 0) return x;
+        return par[x] = root(par[x]);
+    }
 
-    bool issame(int x, int y) { return root(x) == root(y); }
+    bool issame(const int x, const int y) {
+        return root(x) == root(y);
+    }
 
-    int rank(int x) { return -par[root(x)]; }
+    int rank(const int x) {
+        return -par[root(x)];
+    }
 
-    int edge_cnt(int x) { return group_edges[root(x)].size(); }
+    int edge_cnt(const int x) {
+        const auto it = group_edges.find(root(x));
+        return it != group_edges.end() ? it->second.size() : 0;
+    }
 
     void make_groups() {
-        for (int i = 0; i < (int)(par.size()); i++) {
+        for (int i = 0; i < static_cast<int>(par.size()); i++) {
             groups[root(i)].push_back(i);
         }
-        for (auto& p : edges) {
+        for (const auto& p : edges) {
             group_edges[root(p.first)].push_back(p);
         }
-        return;
     }
 };
 

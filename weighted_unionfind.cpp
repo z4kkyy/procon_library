@@ -28,33 +28,38 @@ public:
             std::swap(x, y);
             w = -w;
         }
-        par[x] += par[y];
-        par[y] = x;
+        par[x] += par[y], par[y] = x;
         diff_weight[y] = w;
         return true;
     }
 
-    int root(int x) {
+    int root(const int x) {
         if (par[x] < 0) return x;
         int r = root(par[x]);
         diff_weight[x] += diff_weight[par[x]];
         return par[x] = r;
     }
 
-    bool issame(int x, int y) { return root(x) == root(y); }
+    bool issame(const int x, const int y) {
+        return root(x) == root(y);
+    }
 
-    long long diff(int x, int y) {
+    long long diff(const int x, const int y) {
         return weight(y) - weight(x);
     }
 
-    long long weight(int x) {
+    long long weight(const int x) {
         root(x);
         return diff_weight[x];
     }
 
-    int rank(int x) { return -par[root(x)]; }
+    int rank(int x) {
+        return -par[root(x)];
+    }
 
-    int edge_cnt(int x) { return group_edges[root(x)].size(); }
+    int edge_cnt(const int x) {
+        return group_edges[root(x)].size();
+    }
 
     void make_groups() {
         for (int i = 0; i < (int)(par.size()); i++) {
@@ -63,7 +68,6 @@ public:
         for (auto& t : edges) {
             group_edges[root(std::get<0>(t))].emplace_back(std::get<0>(t), std::get<1>(t));
         }
-        return;
     }
 };
 

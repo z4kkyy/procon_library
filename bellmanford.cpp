@@ -57,7 +57,6 @@ public:
         while (t != st) ret.push_back(t = pre[t]);
         std::reverse(ret.begin(), ret.end());
     }
-
 };
 
 

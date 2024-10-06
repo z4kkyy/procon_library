@@ -55,34 +55,33 @@ public:
 };
 
 
-// https://judge.yosupo.jp/problem/shortest_path
+// https://judge.yosupo.jp/problem/tree_diameter
 int main() {
-    int N, M, s, t;
-    std::cin >> N >> M >> s >> t;
+    int N;
+    std::cin >> N;
 
     Dijkstra dj(N);
 
-    while (M--) {
+    for (int i = 0; i < N - 1; i++) {
         int a, b;
         long long c;
         std::cin >> a >> b >> c;
 
         dj.add_edge(a, b, c);
+        dj.add_edge(b, a, c);
     }
 
+    dj.exec(0);
+    int s = std::max_element(dj.dist.begin(), dj.dist.end()) - dj.dist.begin();
     dj.exec(s);
+    int t = std::max_element(dj.dist.begin(), dj.dist.end()) - dj.dist.begin();
 
-    if (dj.dist[t] == LINF) {
-        std::cout << -1 << std::endl;
-    } else {
-        std::vector<int> route;
-        dj.route(route, s, t);
-        std::cout << dj.dist[t] << ' ' << route.size() - 1 << std::endl;
+    std::vector<int> route;
+    dj.route(route, s, t);
 
-        for (size_t i = 0; i < route.size() - 1; i++) {
-            std::cout << route[i] << ' ' << route[i + 1] << std::endl;
-        }
+    std::cout << dj.dist[t] << ' ' << route.size() << std::endl;
+    for (int i = 0; i < route.size(); i++) {
+        std::cout << route[i] << (i == route.size() - 1 ? '\n' : ' ');
     }
-
     return 0;
 }

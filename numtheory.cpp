@@ -13,7 +13,7 @@ struct NumTheory {
 private:
     std::mt19937_64 rng;
 
-    T binpower(T base, T e, T mod) const {
+    T binpower(T base, T e, T mod) {
         T result = 1;
         base %= mod;
         while (e) {
@@ -25,7 +25,7 @@ private:
         return result;
     }
 
-    bool check_composite(T n, T a, T d, int s) const {
+    bool check_composite(T n, T a, T d, int s) {
         T x = binpower(a, d, n);
         if (x == 1 || x == n - 1)
             return false;
@@ -67,7 +67,7 @@ private:
 public:
     NumTheory() : rng(std::chrono::steady_clock::now().time_since_epoch().count()) {}
 
-    bool is_prime(T n) const {
+    bool is_prime(T n) {
         if (n < 2)
             return false;
         if (n < 4)
@@ -112,7 +112,7 @@ public:
         return factors;
     }
 
-    T euler_phi(T n) const {
+    T euler_phi(T n) {
         auto factors = factorize(n);
         __uint128_t result = n;
         for (const auto& [prime, count] : factors) {
@@ -122,7 +122,7 @@ public:
         return static_cast<T>(result);
     }
 
-    T count_primes(T n) const {
+    T count_primes(T n) {
         if (n <= 1) return 0;
         if (n == 2) return 1;
         const T sq = std::sqrt(n);
@@ -174,6 +174,44 @@ public:
         }
         return larges[0] + 1;
     }
+
+    T find_primitive_root(T p) {
+        if (p < 2) return -1;
+        if (p == 2) return 1;
+        if (!is_prime(p)) return -1;
+
+        T phi = p - 1;
+        auto factors = factorize(phi);
+
+        for (T r = 2; r < p; ++r) {
+            bool is_primitive = true;
+            for (const auto& [prime_factor, _] : factors) {
+                if (binpower(r, phi / prime_factor, p) == 1) {
+                    is_primitive = false;
+                    break;
+                }
+            }
+            if (is_primitive) return r;
+        }
+
+        return -1;
+    }
+
+    T tetration(T a, T b, T m) {
+        if (m == 1) return 0;
+        if (a == 0) return (b & 1) ? 0 : 1;
+        if (b == 0) return 1;
+        if (b == 1) return a % m;
+
+        bool use_phi = (b > 2) && !((a <= 9 && b == 3) || (a == 2 && b <= 5));
+
+        if (use_phi) {
+            T phi_m = euler_phi(m);
+            return binpower(a, phi_m + tetration(a, b - 1, phi_m), m);
+        } else {
+            return binpower(a, tetration(a, b - 1, T(1e9)), m);
+        }
+    }
 };
 
 
@@ -222,6 +260,27 @@ int main() {
     // std::cin >> N;
 
     // std::cout << nt.count_primes(N) << std::endl;
+
+
+    // // https://judge.yosupo.jp/problem/primitive_root
+    // int Q;
+    // std::cin >> Q;
+
+    // while (Q--) {
+    //     uint64_t p;
+    //     std::cin >> p;
+    //     std::cout << nt.find_primitive_root(p) << std::endl;
+    // }
+
+    // https://judge.yosupo.jp/problem/tetration_mod
+    int T;
+    std::cin >> T;
+
+    while (T--) {
+        uint64_t A, B, M;
+        std::cin >> A >> B >> M;
+        std::cout << nt.tetration(A, B, M) << std::endl;
+    }
 
     return 0;
 }

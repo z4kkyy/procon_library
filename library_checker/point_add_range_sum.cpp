@@ -48,29 +48,40 @@ public:
 /*
     // example
     using T = int;
-    auto f = [] (T x1, T x2) { return std::max(x1, x2); };
+    auto f = [](T x1, T x2) { return std::max(x1, x2); };
     const T ex = std::numeric_limits<T>::min();
     SegmentTree<T, decltype(f)> seg(n, f, ex);
 */
 
-
-// https://judge.yosupo.jp/problem/static_range_sum
 int main() {
     int N, Q;
     std::cin >> N >> Q;
 
     std::vector<long long> A(N);
-    for (long long& a : A) std::cin >> a;
+    for (long long& a : A)
+        std::cin >> a;
 
-    auto f = [](long long a, long long b) { return a + b; };
-    SegmentTree<long long, decltype(f)> seg(N, f, 0);
+    using T = long long;
+    auto f = [](T x1, T x2) { return x1 + x2; };
+    const T ex = 0LL;
+    SegmentTree<T, decltype(f)> seg(N, f, ex);
 
     seg.build(A);
 
     while (Q--) {
-        int l, r;
-        std::cin >> l >> r;
-        std::cout << seg.query(l, r) << std::endl;
+        int type;
+        std::cin >> type;
+
+        if (type == 0) {
+            int p;
+            long long x;
+            std::cin >> p >> x;
+            seg.update(p, seg[p] + x);
+        } else {
+            int l, r;
+            std::cin >> l >> r;
+            std::cout << seg.query(l, r) << std::endl;
+        }
     }
 
     return 0;

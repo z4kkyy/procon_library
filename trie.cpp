@@ -23,7 +23,7 @@ public:
     void insert(std::string_view S) {
         size_t node_id = 0;
         nodes[node_id].prefix_count++;
-        for (char& x : S) {
+        for (const char& x : S) {
             if (nodes[node_id].next.count(x) == 0) {
                 nodes[node_id].next[x] = nodes.size();
                 nodes.emplace_back();
@@ -39,7 +39,7 @@ public:
 
     int count(std::string_view S) const {
         size_t node_id = 0;
-        for (char& x : S) {
+        for (const char& x : S) {
             auto it = nodes[node_id].next.find(x);
             if (it == nodes[node_id].next.end()) {
                 return 0;
@@ -51,7 +51,7 @@ public:
 
     int count_prefixing(std::string_view S, bool equal = true) const {
         size_t node_id = 0;
-        for (char& x : S) {
+        for (const char& x : S) {
             auto it = nodes[node_id].next.find(x);
             if (it == nodes[node_id].next.end()) {
                 return 0;

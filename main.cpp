@@ -39,8 +39,8 @@ template <class... T> constexpr auto max(T... a) { return max(initializer_list<c
 template <typename T> inline T bpow(T a, int n) { T r(1); while (n) { if (n & 1) r *= a; a *= a; n >>= 1; } return r; }
 template <typename T> inline void uniq(vector<T>& v) { sort(all(v)); v.erase(unique(all(v)), v.end()); }
 template <typename T> inline void comp(vector<T>& v) { vector<T> u = v; uniq(u); for (T& x : v) { x = lower_bound(all(u), x) - u.begin(); } }
-template <typename T> inline T gcd_all(vector<T>& v) { return reduce(all(v), v[0], [](T x, T y) { return gcd(x, y); }); }
-template <typename T> inline T lcm_all(vector<T>& v) { return reduce(all(v), v[0], [](T x, T y) { return lcm(x, y); }); }
+template <typename T> inline T gcd_all(vector<T>& v) { return reduce(all(v), v[0], [] (T x, T y) { return gcd(x, y); }); }
+template <typename T> inline T lcm_all(vector<T>& v) { return reduce(all(v), v[0], [] (T x, T y) { return lcm(x, y); }); }
 
 template <typename T, typename U> ostream& operator<<(ostream& os, const pair<T, U>& p) { return os << p.first << " " << p.second; }
 template <typename T, typename U> istream& operator>>(istream& is, pair<T, U>& p) { return is >> p.first >> p.second; }
@@ -48,11 +48,80 @@ template <typename T> ostream& operator<<(ostream& os, const vector<T>& v) { rep
 template <typename T> istream& operator>>(istream& is, vector<T>& v) { for (auto& x : v) is >> x; return is; }
 template <typename T> ostream& operator<<(ostream& os, const set<T>& st) { int c(0); for (auto& x : st) { if (c) os << " "; os << x; c++; } return os; }
 
+using pli = pair<ll, int>;
+
+struct Dijkstra {
+private:
+    struct edge { int to; long long cost; };
+    int n;
+    std::vector<std::vector<edge>> edges;
+    std::vector<int> pre;
+
+public:
+    std::vector<long long> dist, way;
+
+    Dijkstra(int i) : n(i), edges(i), pre(i), dist(i, LINF), way(i) {}
+
+    void add_edge(int from, int to, long long cost) {
+        edges[from].emplace_back(to, cost);
+    }
+
+    void exec(int s) {
+        std::priority_queue<pli, std::vector<pli>, std::greater<pli>> que;
+        dist.assign(n, LINF), pre.assign(n, 0LL), way.assign(n, 0LL);
+        dist[s] = 0LL; way[s] = 1LL; que.emplace(0LL, s);
+
+        while (!que.empty()) {
+            auto [cost, v] = que.top(); que.pop();
+            if (dist[v] < cost) continue;
+
+            for (auto& e : edges[v]) {
+                if (dist[e.to] >= dist[v] + e.cost) {
+                    way[e.to] += way[v];
+                    if (dist[e.to] == dist[v] + e.cost) continue;
+                    dist[e.to] = dist[v] + e.cost;
+                    pre[e.to] = v;
+                    que.emplace(dist[e.to], e.to);
+                }
+            }
+        }
+    }
+
+    void route(std::vector<int>& ret, int st, int to) {
+        assert(ret.size() == 0);
+        int t = to;
+        ret.push_back(to);
+        while (t != st) ret.push_back(t = pre[t]);
+        std::reverse(ret.begin(), ret.end());
+    }
+};
+
 
 void solve() {
+    int n, m, s, t;
+    cin >> n >> m >> s >> t;
 
+    Dijkstra dj(n);
 
+    rep(i, m) {
+        int a, b;
+        ll c;
+        cin >> a >> b >> c;
+        dj.add_edge(a, b, c);
+    }
 
+    dj.exec(s);
+    vector<int> route;
+    dj.route(route, s, t);
+
+    if (dj.dist[t] == LINF) {
+        cout << -1 << endl;
+    } else {
+        cout << dj.dist[t] << " " << route.size() - 1 << endl;
+        rep(i, route.size() - 1) {
+            cout << route[i] << " " << route[i + 1] << endl;
+        }
+    }
     return;
 }
 
