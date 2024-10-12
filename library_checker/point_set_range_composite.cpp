@@ -71,8 +71,8 @@ public:
 		while (z.pow((mod - 1) / 2) != mod - 1) z = mt();
 
 		ModInt c = z.pow(q);
-		Modint t = pow(q);
-		Modint r = pow((q + 1) / 2);
+		ModInt t = pow(q);
+		ModInt r = pow((q + 1) / 2);
 
 		for (; m > 1; m--) {
 			ModInt tmp = t.pow(1 << (m - 2));
@@ -137,14 +137,6 @@ public:
     SegmentTree<T, decltype(f)> seg(n, f, ex);
 */
 
-/*
-ax + b
-cx + d
-
-a(cx + d) + b
-a*c x + ad + b
-*/
-
 int main() {
     int N, Q;
     std::cin >> N >> Q;
@@ -161,9 +153,31 @@ int main() {
     auto f = [] (T x1, T x2) {
         auto [a, b] = x1;
         auto [c, d] = x2;
-        return T{a * c, a * d + b};
+        return T{a * c, b * c + d};
     };
+    const T ex{1, 0};
 
+    SegmentTree<T, decltype(f)> seg(N, f, ex);
+
+    seg.build(v);
+
+    while (Q--) {
+        int type;
+        std::cin >> type;
+        
+        if (type == 0) {
+            int p;
+            mint c, d;
+            std::cin >> p >> c >> d;
+            seg.update(p, T{c, d});
+        } else {
+            int l, r;
+            mint x;
+            std::cin >> l >> r >> x;
+            auto [a, b] = seg.query(l, r);
+            std::cout << a * x + b << std::endl;
+        }
+    }
 
     return 0;
 }

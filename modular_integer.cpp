@@ -68,8 +68,8 @@ public:
 		while (z.pow((mod - 1) / 2) != mod - 1) z = mt();
 
 		ModInt c = z.pow(q);
-		Modint t = pow(q);
-		Modint r = pow((q + 1) / 2);
+		ModInt t = pow(q);
+		ModInt r = pow((q + 1) / 2);
 
 		for (; m > 1; m--) {
 			ModInt tmp = t.pow(1 << (m - 2));
