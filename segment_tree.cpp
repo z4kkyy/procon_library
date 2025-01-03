@@ -3,54 +3,66 @@
 #include <vector>
 #include <span>
 
-template<typename T, typename F>
-concept BinaryOperation = requires(F f, T a, T b) {
-    { f(a, b) } -> std::same_as<T>;
+template <typename F, typename S>
+concept BinaryOperation = requires(F f, S a, S b) {
+    { f(a, b) } -> std::convertible_to<S>;
 };
 
-template<typename T, typename F>
-requires BinaryOperation<T, F>
+template<typename S, typename F>
+requires BinaryOperation<F, S>
 class SegmentTree {
 private:
     int n;
-    std::vector<T> data;
+    std::vector<S> data;
     F f;
-    T e;
+    S e;
+
+    inline void update_node(int k) {
+        data[k] = f(data[k << 1], data[(k << 1) | 1]);
+    }
 
 public:
-    SegmentTree(int n_, F f_, T e_) : n(1), f(std::move(f_)), e(std::move(e_)) {
+    SegmentTree(int n_, F f_, S e_) : f(f_), e(e_) {
+        n = 1;
         while (n < n_) n <<= 1;
         data.assign(n << 1, e);
     }
 
-    T operator[](int i) const { return data[n + i]; }
+    S operator[](int i) const { return data[n + i]; }
 
-    void update(int i, const T& x) {
+    void update(int i, const S& x) {
         data[i += n] = x;
-        while (i >>= 1) data[i] = f(data[(i << 1) | 0], data[(i << 1) | 1]);
+        while (i >>= 1) update_node(i);
     }
 
-    void build(std::span<const T> v = {}) {
-        for (size_t i = 0; i < v.size(); i++) data[n + i] = v[i];
-        for (int i = n - 1; i > 0; i--) data[i] = f(data[(i << 1) | 0], data[(i << 1) | 1]);
+    void build(std::span<const S> v = {}) {
+        for (int i = 0; i < (int)v.size(); i++) {
+            data[n + i] = v[i];
+        }
+        for (int i = n - 1; i > 0; i--) {
+            update_node(i);
+        }
     }
 
-    T query(int a, int b) const {  // [a, b)
+    S query(int a, int b) const {  // [a, b)
         if (a >= b) return e;
-        T vl = e, vr = e;
-        for (int l = a + n, r = b + n; l < r; l >>= 1, r >>= 1) {
+        S vl = e, vr = e;
+        int l = a + n, r = b + n;
+        while (l < r) {
             if (l & 1) vl = f(vl, data[l++]);
             if (r & 1) vr = f(data[--r], vr);
+            l >>= 1;
+            r >>= 1;
         }
         return f(vl, vr);
     }
 };
 /*
     // example
-    using T = int;
-    auto f = [] (T x1, T x2) { return std::max(x1, x2); };
-    const T ex = std::numeric_limits<T>::min();
-    SegmentTree<T, decltype(f)> seg(n, f, ex);
+    using S = int;
+    auto op = [] (S x1, S x2) { return std::max(x1, x2); };
+    const S id = std::numeric_limits<S>::min();
+    SegmentTree<S, decltype(op)> seg(n, op, id);
 */
 
 
@@ -62,8 +74,8 @@ int main() {
     std::vector<long long> A(N);
     for (long long& a : A) std::cin >> a;
 
-    auto f = [](long long a, long long b) { return a + b; };
-    SegmentTree<long long, decltype(f)> seg(N, f, 0);
+    auto op = [](long long a, long long b) { return a + b; };
+    SegmentTree<long long, decltype(op)> seg(N, op, 0);
 
     seg.build(A);
 
